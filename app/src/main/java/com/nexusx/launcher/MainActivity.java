@@ -204,7 +204,7 @@ public class MainActivity extends Activity {
 
     // The drawer is layered over the home screen.
     void buildDrawer() {
-        handleWidth = dp(88);
+        handleWidth = dp(48);
         drawerWidth = getResources().getDisplayMetrics().widthPixels * 0.82f;
         closedOffset = drawerWidth - handleWidth;
 
@@ -285,7 +285,7 @@ public class MainActivity extends Activity {
         SideHandle handle = new SideHandle(this);
         FrameLayout.LayoutParams handleParams =
             new FrameLayout.LayoutParams(
-                (int)handleWidth, dp(118), Gravity.LEFT | Gravity.CENTER_VERTICAL
+                (int)handleWidth, dp(160), Gravity.LEFT | Gravity.CENTER_VERTICAL
             );
         drawer.addView(handle, handleParams);
 
