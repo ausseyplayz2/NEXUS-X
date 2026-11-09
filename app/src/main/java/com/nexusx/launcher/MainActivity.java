@@ -144,32 +144,12 @@ public class MainActivity extends Activity {
 
         populateGrid(homeContent, getLaunchableApps(), 4, 105);
 
-        List<ResolveInfo> pinned = getPinnedApps();
-
-        if (!pinned.isEmpty()) {
-            TextView dockLabel = text("PINNED APPS", 10, 0xFFB18CFF);
-            root.addView(dockLabel,
-                new LinearLayout.LayoutParams(-1, dp(22)));
-
-            LinearLayout dock = new LinearLayout(this);
-            dock.setGravity(Gravity.CENTER);
-            dock.setBackground(panel());
-            dock.setPadding(dp(3), dp(2), dp(3), dp(2));
-
-            for (int i = 0; i < Math.min(5, pinned.size()); i++) {
-                addAppTile(dock, pinned.get(i), 72);
-            }
-
-            root.addView(dock,
-                new LinearLayout.LayoutParams(-1, dp(77)));
-        }
-
         buildDrawer();
     }
 
     // The drawer is layered over the home screen.
     void buildDrawer() {
-        handleWidth = dp(43);
+        handleWidth = dp(64);
         drawerWidth = getResources().getDisplayMetrics().widthPixels * 0.82f;
         closedOffset = drawerWidth - handleWidth;
 
@@ -483,8 +463,6 @@ public class MainActivity extends Activity {
             loadPinned(search == null ? "" : search.getText().toString());
         }
 
-        // Refresh the home screen so its dock stays current.
-        if (!drawerOpen) showHome();
     }
 
     List<ResolveInfo> getPinnedApps() {
@@ -748,7 +726,7 @@ public class MainActivity extends Activity {
             p.setTypeface(Typeface.DEFAULT_BOLD);
             p.setTextAlign(Paint.Align.CENTER);
 
-            canvas.drawText("‹", w / 2, h / 2 + dp(10), p);
+            canvas.drawText("‹‹‹", w / 2, h / 2 + dp(10), p);
         }
     }
 }
