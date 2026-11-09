@@ -9,25 +9,25 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.view.*;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import android.text.*;
 import java.util.*;
 
 public class MainActivity extends Activity {
 
+    FrameLayout shell;
     LinearLayout root;
     LinearLayout content;
     EditText search;
+    TextView activeClock;
 
     boolean pinnedPage = false;
-    float touchX, touchY;
-
-    int cyan = Color.rgb(0, 220, 255);
-    int purple = Color.rgb(165, 75, 255);
 
     final String PREFS = "nexus_preferences";
     final String PINNED = "pinned_apps";
+
+    int cyan = Color.rgb(0, 220, 255);
+    int purple = Color.rgb(165, 75, 255);
 
     GradientDrawable background() {
         GradientDrawable g = new GradientDrawable(
@@ -73,55 +73,157 @@ public class MainActivity extends Activity {
     }
 
     void setup() {
+        shell = new FrameLayout(this);
+        shell.setBackground(background());
+
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(12, 12, 12, 10);
+        root.setPadding(12, 10, 26, 10);
         root.setBackground(background());
-        setContentView(root);
 
-        attachSwipe(root);
+        shell.addView(root, new FrameLayout.LayoutParams(
+            -1, -1
+        ));
+
+        setContentView(shell);
+
+        addSideHandle();
     }
 
-    void attachSwipe(View view) {
-        view.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                touchX = event.getX();
-                touchY = event.getY();
-                return false;
+    void addSideHandle() {
+        TextView handle = text(
+            pinnedPage ? "›" : "‹",
+            32,
+            Color.WHITE
+        );
+
+        GradientDrawable shape = new GradientDrawable();
+        shape.setColor(0xFFEC347D);
+        shape.setCornerRadius(24);
+        shape.setStroke(2, 0xFFFF8DB5);
+        handle.setBackground(shape);
+        handle.setElevation(12);
+
+        FrameLayout.LayoutParams params =
+            new FrameLayout.LayoutParams(38, 94);
+
+        params.gravity = Gravity.RIGHT | Gravity.CENTER_VERTICAL;
+        params.rightMargin = 2;
+
+        shell.addView(handle, params);
+
+        handle.setOnClickListener(v -> {
+            if (pinnedPage) {
+                showHome();
+            } else {
+                showPinned();
+            }
+        });
+
+        final float[] startX = new float[1];
+
+        handle.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+
+                case MotionEvent.ACTION_DOWN:
+                    startX[0] = event.getRawX();
+                    return true;
+
+                case MotionEvent.ACTION_MOVE:
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+                    float dx = event.getRawX() - startX[0];
+
+                    if (Math.abs(dx) > 25) {
+                        if (dx < 0 && !pinnedPage) {
+                            showPinned();
+                        } else if (dx > 0 && pinnedPage) {
+                            showHome();
+                        }
+                    } else {
+                        handle.performClick();
+                    }
+                    return true;
+
+                case MotionEvent.ACTION_CANCEL:
+                    return true;
             }
 
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                float dx = event.getX() - touchX;
-                float dy = event.getY() - touchY;
-
-                if (Math.abs(dx) > 100 &&
-                    Math.abs(dx) > Math.abs(dy) * 1.3f) {
-
-                    if (dx < 0 && !pinnedPage) {
-                        showPinned();
-                        return true;
-                    }
-
-                    if (dx > 0 && pinnedPage) {
-                        showHome();
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return true;
         });
     }
 
     void showHeader() {
-        TextView logo = text("✦ N E X U S  X ✦", 24, cyan);
+        TextView logo = text(
+            "✦ N E X U S  X ✦",
+            23,
+            cyan
+        );
+
         root.addView(logo,
-            new LinearLayout.LayoutParams(-1, 43));
+            new LinearLayout.LayoutParams(-1, 38));
 
         TextView subtitle = text(
             "GAMING COMMAND CENTER",
-            10, 0xFFB18CFF
+            10,
+            0xFFB18CFF
         );
-        root.addView(subtitle);
+
+        root.addView(subtitle,
+            new LinearLayout.LayoutParams(-1, 20));
+
+        TextView clock = text(
+            "",
+            43,
+            Color.WHITE
+        );
+
+        activeClock = clock;
+
+        root.addView(clock,
+            new LinearLayout.LayoutParams(-1, 52));
+
+        TextView date = text(
+            new java.text.SimpleDateFormat(
+                "EEEE, MMMM dd",
+                Locale.getDefault()
+            ).format(new Date()),
+            12,
+            0xFFB9C7E8
+        );
+
+        root.addView(date,
+            new LinearLayout.LayoutParams(-1, 22));
+
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Runnable updateClock = new Runnable() {
+            @Override
+            public void run() {
+                if (activeClock == clock) {
+                    clock.setText(
+                        new java.text.SimpleDateFormat(
+                            "HH:mm",
+                            Locale.getDefault()
+                        ).format(new Date())
+                    );
+
+                    handler.postDelayed(this, 1000);
+                }
+            }
+        };
+
+        updateClock.run();
+
+        TextView status = text(
+            "◈ SYSTEM ONLINE  •  ALL APPLICATIONS",
+            10,
+            cyan
+        );
+
+        root.addView(status,
+            new LinearLayout.LayoutParams(-1, 34));
     }
 
     void showHome() {
@@ -129,45 +231,14 @@ public class MainActivity extends Activity {
         setup();
         showHeader();
 
-        TextView clock = text("", 43, Color.WHITE);
-        root.addView(clock,
-            new LinearLayout.LayoutParams(-1, 58));
-
-        TextView date = text(
-            new java.text.SimpleDateFormat(
-                "EEEE, MMMM dd", Locale.getDefault()
-            ).format(new Date()),
-            12, 0xFFB9C7E8
-        );
-        root.addView(date);
-
-        new Handler().post(new Runnable() {
-            public void run() {
-                if (!pinnedPage && clock.getParent() != null) {
-                    clock.setText(
-                        new java.text.SimpleDateFormat(
-                            "HH:mm", Locale.getDefault()
-                        ).format(new Date())
-                    );
-                    new Handler().postDelayed(this, 1000);
-                }
-            }
-        });
-
-        TextView status = text(
-            "◈ SYSTEM ONLINE  •  ALL APPLICATIONS",
-            10, cyan
-        );
-        root.addView(status,
-            new LinearLayout.LayoutParams(-1, 35));
-
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(false);
-        attachSwipe(scroll);
+        scroll.setVerticalScrollBarEnabled(false);
 
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(0, 5, 0, 5);
+        content.setPadding(0, 8, 0, 8);
+
         scroll.addView(content);
 
         root.addView(scroll,
@@ -176,12 +247,13 @@ public class MainActivity extends Activity {
         populateGrid(content, getLaunchableApps());
 
         TextView dockLabel = text(
-            "PINNED DOCK  •  SWIPE LEFT FOR MORE",
-            9, 0xFFB18CFF
+            "PINNED APPS",
+            10,
+            0xFFB18CFF
         );
 
         root.addView(dockLabel,
-            new LinearLayout.LayoutParams(-1, 22));
+            new LinearLayout.LayoutParams(-1, 24));
 
         LinearLayout dock = new LinearLayout(this);
         dock.setGravity(Gravity.CENTER);
@@ -197,20 +269,22 @@ public class MainActivity extends Activity {
         if (pinned.isEmpty()) {
             TextView hint = text(
                 "Long-press an app to pin it",
-                11, 0xFFB9C7E8
+                11,
+                0xFFB9C7E8
             );
+
             dock.addView(hint,
-                new LinearLayout.LayoutParams(-1, 65));
+                new LinearLayout.LayoutParams(-1, 68));
         }
 
         root.addView(dock,
-            new LinearLayout.LayoutParams(-1, 82));
+            new LinearLayout.LayoutParams(-1, 88));
 
-        TextView page = text(
-            "HOME     ●     ○     PINNED",
-            10, cyan
-        );
-        root.addView(page);
+        root.addView(text(
+            "TAP OR PULL THE SIDE ARROW FOR PINNED APPS",
+            9,
+            cyan
+        ));
     }
 
     void showPinned() {
@@ -220,10 +294,12 @@ public class MainActivity extends Activity {
 
         TextView title = text(
             "✦ YOUR PINNED APPS",
-            20, cyan
+            19,
+            cyan
         );
+
         root.addView(title,
-            new LinearLayout.LayoutParams(-1, 48));
+            new LinearLayout.LayoutParams(-1, 44));
 
         search = new EditText(this);
         search.setSingleLine(true);
@@ -238,7 +314,7 @@ public class MainActivity extends Activity {
             new LinearLayout.LayoutParams(-1, 52));
 
         ScrollView scroll = new ScrollView(this);
-        attachSwipe(scroll);
+        scroll.setVerticalScrollBarEnabled(false);
 
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
@@ -266,8 +342,9 @@ public class MainActivity extends Activity {
         loadPinned("");
 
         root.addView(text(
-            "PINNED PAGE     ○     ●     SWIPE RIGHT HOME",
-            10, cyan
+            "TAP OR PULL THE SIDE ARROW TO RETURN HOME",
+            9,
+            cyan
         ));
     }
 
@@ -304,17 +381,18 @@ public class MainActivity extends Activity {
 
             for (int j = i;
                  j < Math.min(i + columns, apps.size()); j++) {
-                addAppTile(row, apps.get(j), 108);
+                addAppTile(row, apps.get(j), 128);
             }
 
             for (int j = Math.min(
                     i + columns, apps.size());
                  j < i + columns; j++) {
                 row.addView(new View(this),
-                    new LinearLayout.LayoutParams(0, 108, 1));
+                    new LinearLayout.LayoutParams(0, 128, 1));
             }
 
-            target.addView(row);
+            target.addView(row,
+                new LinearLayout.LayoutParams(-1, 132));
         }
     }
 
@@ -333,16 +411,20 @@ public class MainActivity extends Activity {
         tile.setClickable(true);
         tile.setFocusable(true);
 
+        int iconSize = height >= 110 ? 62 : 40;
+        int labelSize = height >= 110 ? 11 : 9;
+
         ImageView icon = new ImageView(this);
         icon.setImageDrawable(app.loadIcon(pm));
         icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
         tile.addView(icon,
-            new LinearLayout.LayoutParams(49, 49));
+            new LinearLayout.LayoutParams(iconSize, iconSize));
 
         TextView label = text(
             app.loadLabel(pm).toString(),
-            10, Color.WHITE
+            labelSize,
+            Color.WHITE
         );
 
         label.setMaxLines(2);
@@ -351,12 +433,13 @@ public class MainActivity extends Activity {
         );
 
         tile.addView(label,
-            new LinearLayout.LayoutParams(-1, 34));
+            new LinearLayout.LayoutParams(-1, 36));
 
         LinearLayout.LayoutParams params =
             new LinearLayout.LayoutParams(0, height, 1);
 
-        params.setMargins(2, 3, 2, 3);
+        params.setMargins(3, 3, 3, 3);
+
         parent.addView(tile, params);
 
         tile.setOnClickListener(v -> launchApp(app));
@@ -479,8 +562,7 @@ public class MainActivity extends Activity {
 
     List<ResolveInfo> getPinnedApps() {
         Set<String> keys = getPinnedKeys();
-        List<ResolveInfo> result =
-            new ArrayList<>();
+        List<ResolveInfo> result = new ArrayList<>();
 
         for (ResolveInfo app : getLaunchableApps()) {
             if (keys.contains(appKey(app))) {
@@ -495,8 +577,7 @@ public class MainActivity extends Activity {
         if (content == null) return;
 
         List<ResolveInfo> apps = getPinnedApps();
-        List<ResolveInfo> filtered =
-            new ArrayList<>();
+        List<ResolveInfo> filtered = new ArrayList<>();
 
         for (ResolveInfo app : apps) {
             String name = app.loadLabel(
@@ -516,7 +597,8 @@ public class MainActivity extends Activity {
                 apps.isEmpty()
                     ? "No pinned apps yet.\nLong-press an app on Home to pin it."
                     : "No matching pinned apps found.",
-                14, 0xFFB9C7E8
+                14,
+                0xFFB9C7E8
             );
 
             content.addView(empty,
