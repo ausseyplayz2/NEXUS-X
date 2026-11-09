@@ -396,16 +396,31 @@ public class MainActivity extends Activity {
 
     void launchApp(ResolveInfo app) {
         try {
-            Intent launch = new Intent(Intent.ACTION_MAIN);
-            launch.addCategory(Intent.CATEGORY_LAUNCHER);
-            launch.setComponent(new ComponentName(
-                app.activityInfo.packageName,
-                app.activityInfo.name
-            ));
+            String packageName = app.activityInfo.packageName;
+
+            Intent launch = getPackageManager()
+                .getLaunchIntentForPackage(packageName);
+
+            if (launch == null) {
+                Toast.makeText(this,
+                    "This app has no launch screen",
+                    Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            launch.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+            );
+
             startActivity(launch);
+
         } catch (Exception e) {
-            Toast.makeText(this, "Cannot open app",
-                Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                "Unable to open app: " + e.getMessage(),
+                Toast.LENGTH_LONG).show();
+            android.util.Log.e("NEXUS-X",
+                "App launch failed", e);
         }
     }
 
