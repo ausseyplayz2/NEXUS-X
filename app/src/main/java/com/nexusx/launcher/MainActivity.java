@@ -35,9 +35,9 @@ public class MainActivity extends Activity {
     GradientDrawable panel() {
         GradientDrawable g = new GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
-            new int[]{0xDD102747, 0xEE10152F, 0xEE211343}
+            new int[]{0x66102747, 0x7710152F, 0x77211343}
         );
-        g.setCornerRadius(dp(13));
+        g.setCornerRadius(0);
         g.setStroke(dp(1), 0x9954CFFF);
         return g;
     }
@@ -217,7 +217,7 @@ public class MainActivity extends Activity {
         body.setPadding(dp(10), dp(12), dp(9), dp(10));
         GradientDrawable glassPanel = new GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
-            new int[]{0x88409AC8, 0x99202F59, 0x99401F68}
+            new int[]{0x55309AC8, 0x66202F59, 0x66401F68}
         );
         glassPanel.setCornerRadius(dp(5));
         glassPanel.setStroke(dp(1), 0xAA54DFFF);
@@ -248,7 +248,7 @@ public class MainActivity extends Activity {
         search.setPadding(dp(10), dp(4), dp(10), dp(4));
         GradientDrawable searchGlass = new GradientDrawable(
             GradientDrawable.Orientation.LEFT_RIGHT,
-            new int[]{0x77305D80, 0x88402C69}
+            new int[]{0x44305D80, 0x55402C69}
         );
         searchGlass.setCornerRadius(dp(4));
         searchGlass.setStroke(dp(1), 0x8854DFFF);
@@ -412,7 +412,7 @@ public class MainActivity extends Activity {
 
         GradientDrawable iconPlate = new GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
-            new int[]{0xDD174A69, 0xDD171E42, 0xDD35205C}
+            new int[]{0x66174A69, 0x66171E42, 0x6635205C}
         );
         iconPlate.setCornerRadius(dp(5));
         iconPlate.setStroke(dp(1), 0xCC35DFFF);
@@ -492,7 +492,7 @@ public class MainActivity extends Activity {
         dialog.setOnShowListener(d -> {
             android.graphics.drawable.GradientDrawable panel =
                 new android.graphics.drawable.GradientDrawable();
-            panel.setColor(0xEE061522);
+            panel.setColor(0x66101F35);
             panel.setCornerRadius(0);
             panel.setStroke(dp(1), 0xFF19BFFF);
 
