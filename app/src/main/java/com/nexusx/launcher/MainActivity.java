@@ -636,7 +636,7 @@ public class MainActivity extends Activity {
 
         CyberBackground(Context c) {
             super(c);
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            // Hardware rendering enabled for better performance.
             animationStart = android.os.SystemClock.uptimeMillis();
         }
 
@@ -802,7 +802,7 @@ public class MainActivity extends Activity {
                 new int[]{0xFF142D55, 0xFF176C91, 0xFF30205C},
                 null, Shader.TileMode.CLAMP
             ));
-            p.setShadowLayer(dp(15f + pulse * 5f), 0, 0, 0xFF28CFFF);
+            p.clearShadowLayer();
             canvas.drawPath(core, p);
             p.clearShadowLayer();
             p.setShader(null);
@@ -835,7 +835,7 @@ public class MainActivity extends Activity {
                 cx + size * 0.78f, cy + size * 0.78f
             );
             canvas.save();
-            canvas.rotate((elapsed / 1000f) * 8f, cx, cy);
+            canvas.rotate((elapsed / 1000f) * 4f, cx, cy);
             canvas.drawArc(arc, 205, 48, false, p);
             canvas.drawArc(arc, 25, 52, false, p);
             canvas.drawArc(arc, 115, 35, false, p);
@@ -860,7 +860,7 @@ public class MainActivity extends Activity {
 
             // Stars and glowing particles.
             stars.setSeed(24);
-            for (int i = 0; i < 95; i++) {
+            for (int i = 0; i < 30; i++) {
                 float x = stars.nextFloat() * w;
                 float baseY = stars.nextFloat() * h;
                 float speed = 8f + (i % 5) * 3f;
@@ -894,7 +894,7 @@ public class MainActivity extends Activity {
             p.setStyle(Paint.Style.FILL);
 
             if (animationRunning) {
-                postInvalidateDelayed(42);
+                postInvalidateDelayed(66);
             }
         }
     }
