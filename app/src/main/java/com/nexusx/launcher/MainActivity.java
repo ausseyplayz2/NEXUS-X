@@ -7,6 +7,7 @@ import android.content.pm.*;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
@@ -18,17 +19,34 @@ public class MainActivity extends Activity {
     LinearLayout root;
     LinearLayout content;
     EditText search;
-    boolean drawer = false;
+
+    boolean pinnedPage = false;
+    float touchX, touchY;
 
     int cyan = Color.rgb(0, 220, 255);
     int purple = Color.rgb(165, 75, 255);
 
+    final String PREFS = "nexus_preferences";
+    final String PINNED = "pinned_apps";
+
     GradientDrawable background() {
         GradientDrawable g = new GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
-            new int[]{0xFF080D25, 0xFF171044, 0xFF050916}
+            new int[]{
+                0xFF030817,
+                0xFF111A42,
+                0xFF28104B,
+                0xFF050916
+            }
         );
-        g.setCornerRadius(0);
+        return g;
+    }
+
+    GradientDrawable panel() {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(0x665D64A8);
+        g.setCornerRadius(20);
+        g.setStroke(1, 0x995B9EFF);
         return g;
     }
 
@@ -38,25 +56,18 @@ public class MainActivity extends Activity {
         t.setTextSize(size);
         t.setTextColor(color);
         t.setGravity(Gravity.CENTER);
-        t.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
+        t.setTypeface(Typeface.create(
+            "sans-serif", Typeface.BOLD
+        ));
         return t;
-    }
-
-    GradientDrawable panel() {
-        GradientDrawable g = new GradientDrawable();
-        g.setColor(0xCC151C3B);
-        g.setCornerRadius(24);
-        g.setStroke(2, 0xFF2866B9);
-        return g;
     }
 
     @Override
     public void onCreate(Bundle b) {
         super.onCreate(b);
 
-        getWindow().setStatusBarColor(0xFF080D25);
-        getWindow().setNavigationBarColor(0xFF080D25);
-        getWindow().getDecorView().setSystemUiVisibility(0);
+        getWindow().setStatusBarColor(0xFF050916);
+        getWindow().setNavigationBarColor(0xFF050916);
 
         showHome();
     }
@@ -64,111 +75,210 @@ public class MainActivity extends Activity {
     void setup() {
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(20, 25, 20, 15);
+        root.setPadding(12, 12, 12, 10);
         root.setBackground(background());
         setContentView(root);
+
+        attachSwipe(root);
     }
 
+    void attachSwipe(View view) {
+        view.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                touchX = event.getX();
+                touchY = event.getY();
+                return false;
+            }
+
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                float dx = event.getX() - touchX;
+                float dy = event.getY() - touchY;
+
+                if (Math.abs(dx) > 100 &&
+                    Math.abs(dx) > Math.abs(dy) * 1.3f) {
+
+                    if (dx < 0 && !pinnedPage) {
+                        showPinned();
+                        return true;
+                    }
+
+                    if (dx > 0 && pinnedPage) {
+                        showHome();
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    void showHeader() {
+        TextView logo = text("✦ N E X U S  X ✦", 24, cyan);
+        root.addView(logo,
+            new LinearLayout.LayoutParams(-1, 43));
+
+        TextView subtitle = text(
+            "GAMING COMMAND CENTER",
+            10, 0xFFB18CFF
+        );
+        root.addView(subtitle);
+    }
 
     void showHome() {
-        drawer = false;
+        pinnedPage = false;
         setup();
+        showHeader();
 
-        TextView logo = text("✦ N E X U S  X ✦", 25, cyan);
-        root.addView(logo, new LinearLayout.LayoutParams(-1, 55));
-
-        TextView subtitle = text("GAMING COMMAND CENTER", 10, 0xFFB18CFF);
-        root.addView(subtitle);
-
-        TextView clock = text("", 45, Color.WHITE);
-        root.addView(clock, new LinearLayout.LayoutParams(-1, 65));
+        TextView clock = text("", 43, Color.WHITE);
+        root.addView(clock,
+            new LinearLayout.LayoutParams(-1, 58));
 
         TextView date = text(
             new java.text.SimpleDateFormat(
                 "EEEE, MMMM dd", Locale.getDefault()
-            ).format(new Date()), 13, 0xFFB9C7E8
+            ).format(new Date()),
+            12, 0xFFB9C7E8
         );
         root.addView(date);
 
         new Handler().post(new Runnable() {
             public void run() {
-                if (!drawer && clock.getParent() != null) {
-                    clock.setText(new java.text.SimpleDateFormat(
-                        "HH:mm", Locale.getDefault()
-                    ).format(new Date()));
+                if (!pinnedPage && clock.getParent() != null) {
+                    clock.setText(
+                        new java.text.SimpleDateFormat(
+                            "HH:mm", Locale.getDefault()
+                        ).format(new Date())
+                    );
                     new Handler().postDelayed(this, 1000);
                 }
             }
         });
 
         TextView status = text(
-            "◈ SYSTEM ONLINE  •  SELECT AN APP",
-            11, cyan
+            "◈ SYSTEM ONLINE  •  ALL APPLICATIONS",
+            10, cyan
         );
-        LinearLayout.LayoutParams sp =
-            new LinearLayout.LayoutParams(-1, 45);
-        sp.topMargin = 8;
-        root.addView(status, sp);
+        root.addView(status,
+            new LinearLayout.LayoutParams(-1, 35));
 
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(false);
+        attachSwipe(scroll);
 
-        LinearLayout appGrid = new LinearLayout(this);
-        appGrid.setOrientation(LinearLayout.VERTICAL);
-        appGrid.setPadding(0, 8, 0, 8);
+        content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(0, 5, 0, 5);
+        scroll.addView(content);
 
-        scroll.addView(appGrid);
+        root.addView(scroll,
+            new LinearLayout.LayoutParams(-1, 0, 1));
 
-        root.addView(scroll, new LinearLayout.LayoutParams(
-            -1, 0, 1
-        ));
+        populateGrid(content, getLaunchableApps());
 
-        List<ResolveInfo> apps = getLaunchableApps();
-        PackageManager pm = getPackageManager();
+        TextView dockLabel = text(
+            "PINNED DOCK  •  SWIPE LEFT FOR MORE",
+            9, 0xFFB18CFF
+        );
 
-        int columns = 5;
-        int rowsPerPage = 6;
+        root.addView(dockLabel,
+            new LinearLayout.LayoutParams(-1, 22));
 
-        for (int i = 0; i < apps.size(); i += columns) {
-            LinearLayout row = new LinearLayout(this);
-            row.setGravity(Gravity.CENTER);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-
-            for (int j = i; j < Math.min(i + columns, apps.size()); j++) {
-                addAppTile(row, apps.get(j), pm, 85);
-            }
-
-            for (int j = Math.min(i + columns, apps.size());
-                 j < i + columns; j++) {
-                row.addView(new View(this),
-                    new LinearLayout.LayoutParams(0, 85, 1));
-            }
-
-            appGrid.addView(row);
-        }
-
-        // Bottom dock: first four installed apps
         LinearLayout dock = new LinearLayout(this);
         dock.setGravity(Gravity.CENTER);
         dock.setBackground(panel());
-        dock.setPadding(4, 5, 4, 5);
+        dock.setPadding(3, 3, 3, 3);
 
-        for (int i = 0; i < Math.min(4, apps.size()); i++) {
-            addAppTile(dock, apps.get(i), pm, 75);
+        List<ResolveInfo> pinned = getPinnedApps();
+
+        for (int i = 0; i < Math.min(5, pinned.size()); i++) {
+            addAppTile(dock, pinned.get(i), 78);
         }
 
-        LinearLayout.LayoutParams dp =
-            new LinearLayout.LayoutParams(-1, 85);
-        dp.topMargin = 8;
-        root.addView(dock, dp);
+        if (pinned.isEmpty()) {
+            TextView hint = text(
+                "Long-press an app to pin it",
+                11, 0xFFB9C7E8
+            );
+            dock.addView(hint,
+                new LinearLayout.LayoutParams(-1, 65));
+        }
+
+        root.addView(dock,
+            new LinearLayout.LayoutParams(-1, 82));
+
+        TextView page = text(
+            "HOME     ●     ○     PINNED",
+            10, cyan
+        );
+        root.addView(page);
+    }
+
+    void showPinned() {
+        pinnedPage = true;
+        setup();
+        showHeader();
+
+        TextView title = text(
+            "✦ YOUR PINNED APPS",
+            20, cyan
+        );
+        root.addView(title,
+            new LinearLayout.LayoutParams(-1, 48));
+
+        search = new EditText(this);
+        search.setSingleLine(true);
+        search.setTextColor(Color.WHITE);
+        search.setHintTextColor(0xFFB0B9D5);
+        search.setHint("⌕  Search pinned apps...");
+        search.setTextSize(14);
+        search.setPadding(15, 5, 15, 5);
+        search.setBackground(panel());
+
+        root.addView(search,
+            new LinearLayout.LayoutParams(-1, 52));
+
+        ScrollView scroll = new ScrollView(this);
+        attachSwipe(scroll);
+
+        content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(0, 8, 0, 8);
+
+        scroll.addView(content);
+
+        root.addView(scroll,
+            new LinearLayout.LayoutParams(-1, 0, 1));
+
+        search.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(
+                CharSequence s, int start, int count, int after
+            ) {}
+
+            public void onTextChanged(
+                CharSequence s, int start, int before, int count
+            ) {
+                loadPinned(s.toString());
+            }
+
+            public void afterTextChanged(Editable e) {}
+        });
+
+        loadPinned("");
+
+        root.addView(text(
+            "PINNED PAGE     ○     ●     SWIPE RIGHT HOME",
+            10, cyan
+        ));
     }
 
     List<ResolveInfo> getLaunchableApps() {
         PackageManager pm = getPackageManager();
+
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        List<ResolveInfo> apps = pm.queryIntentActivities(intent, 0);
+        List<ResolveInfo> apps =
+            pm.queryIntentActivities(intent, 0);
 
         Collections.sort(apps, (a, b) ->
             a.loadLabel(pm).toString().compareToIgnoreCase(
@@ -179,12 +289,47 @@ public class MainActivity extends Activity {
         return apps;
     }
 
-    void addAppTile(LinearLayout parent, ResolveInfo app,
-                    PackageManager pm, int height) {
+    void populateGrid(
+        LinearLayout target,
+        List<ResolveInfo> apps
+    ) {
+        target.removeAllViews();
+
+        int columns = 5;
+
+        for (int i = 0; i < apps.size(); i += columns) {
+            LinearLayout row = new LinearLayout(this);
+            row.setGravity(Gravity.CENTER);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+
+            for (int j = i;
+                 j < Math.min(i + columns, apps.size()); j++) {
+                addAppTile(row, apps.get(j), 108);
+            }
+
+            for (int j = Math.min(
+                    i + columns, apps.size());
+                 j < i + columns; j++) {
+                row.addView(new View(this),
+                    new LinearLayout.LayoutParams(0, 108, 1));
+            }
+
+            target.addView(row);
+        }
+    }
+
+    void addAppTile(
+        LinearLayout parent,
+        ResolveInfo app,
+        int height
+    ) {
+        PackageManager pm = getPackageManager();
+
         LinearLayout tile = new LinearLayout(this);
         tile.setOrientation(LinearLayout.VERTICAL);
         tile.setGravity(Gravity.CENTER);
-        tile.setPadding(2, 4, 2, 4);
+        tile.setPadding(2, 5, 2, 4);
+        tile.setBackground(panel());
         tile.setClickable(true);
         tile.setFocusable(true);
 
@@ -192,158 +337,202 @@ public class MainActivity extends Activity {
         icon.setImageDrawable(app.loadIcon(pm));
         icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
-        tile.addView(icon, new LinearLayout.LayoutParams(42, 42));
+        tile.addView(icon,
+            new LinearLayout.LayoutParams(49, 49));
 
         TextView label = text(
-            app.loadLabel(pm).toString(), 10, Color.WHITE
+            app.loadLabel(pm).toString(),
+            10, Color.WHITE
         );
-        label.setMaxLines(1);
-        label.setEllipsize(android.text.TextUtils.TruncateAt.END);
 
-        tile.addView(label, new LinearLayout.LayoutParams(
-            -1, 25
-        ));
+        label.setMaxLines(2);
+        label.setEllipsize(
+            android.text.TextUtils.TruncateAt.END
+        );
 
-        parent.addView(tile, new LinearLayout.LayoutParams(
-            0, height, 1
-        ));
+        tile.addView(label,
+            new LinearLayout.LayoutParams(-1, 34));
+
+        LinearLayout.LayoutParams params =
+            new LinearLayout.LayoutParams(0, height, 1);
+
+        params.setMargins(2, 3, 2, 3);
+        parent.addView(tile, params);
 
         tile.setOnClickListener(v -> launchApp(app));
+
+        tile.setOnLongClickListener(v -> {
+            showAppMenu(app);
+            return true;
+        });
+    }
+
+    void showAppMenu(ResolveInfo app) {
+        String name = app.loadLabel(
+            getPackageManager()
+        ).toString();
+
+        boolean isPinned = isPinned(app);
+
+        String[] options = {
+            "Open",
+            isPinned ? "Unpin" : "Pin",
+            "App Information"
+        };
+
+        new AlertDialog.Builder(this)
+            .setTitle(name)
+            .setItems(options, (dialog, which) -> {
+                if (which == 0) {
+                    launchApp(app);
+                } else if (which == 1) {
+                    togglePin(app);
+                } else if (which == 2) {
+                    openAppInfo(app);
+                }
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 
     void launchApp(ResolveInfo app) {
         try {
             Intent launch = new Intent(Intent.ACTION_MAIN);
             launch.addCategory(Intent.CATEGORY_LAUNCHER);
+
             launch.setComponent(new ComponentName(
                 app.activityInfo.packageName,
                 app.activityInfo.name
             ));
-            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
             startActivity(launch);
+
         } catch (Exception e) {
-            Toast.makeText(this, "Cannot open app",
+            Toast.makeText(this,
+                "Cannot open app", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    void openAppInfo(ResolveInfo app) {
+        try {
+            Intent intent = new Intent(
+                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            );
+
+            intent.setData(Uri.parse(
+                "package:" + app.activityInfo.packageName
+            ));
+
+            startActivity(intent);
+
+        } catch (Exception e) {
+            Toast.makeText(this,
+                "Cannot open app information",
                 Toast.LENGTH_SHORT).show();
         }
     }
 
-    TextView button(String label) {
-        TextView b = new TextView(this);
-        b.setText(label);
-        b.setTextColor(Color.WHITE);
-        b.setTextSize(15);
-        b.setTypeface(Typeface.DEFAULT_BOLD);
-        b.setGravity(Gravity.CENTER);
-        b.setSingleLine(true);
-        b.setClickable(true);
-        b.setFocusable(true);
-        b.setBackground(panel());
-
-        LinearLayout.LayoutParams p =
-            new LinearLayout.LayoutParams(-1, 65);
-        p.setMargins(0, 10, 0, 10);
-
-        root.addView(b, p);
-        return b;
+    String appKey(ResolveInfo app) {
+        return new ComponentName(
+            app.activityInfo.packageName,
+            app.activityInfo.name
+        ).flattenToString();
     }
 
-    void showDrawer() {
-        drawer = true;
-        setup();
+    Set<String> getPinnedKeys() {
+        return new HashSet<>(
+            getSharedPreferences(PREFS, MODE_PRIVATE)
+                .getStringSet(PINNED, new HashSet<>())
+        );
+    }
 
-        TextView title = text("✦ APP LIBRARY", 24, cyan);
-        root.addView(title, new LinearLayout.LayoutParams(-1, 65));
+    boolean isPinned(ResolveInfo app) {
+        return getPinnedKeys().contains(appKey(app));
+    }
 
-        search = new EditText(this);
-        search.setSingleLine(true);
-        search.setHint("Search installed apps...");
-        search.setHintTextColor(0xFF8995B8);
-        search.setTextColor(Color.WHITE);
-        search.setBackground(panel());
-        search.setPadding(18, 5, 18, 5);
-        root.addView(search, new LinearLayout.LayoutParams(-1, 55));
+    void togglePin(ResolveInfo app) {
+        Set<String> keys = getPinnedKeys();
+        String key = appKey(app);
 
-        ScrollView scroll = new ScrollView(this);
-        content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        scroll.addView(content);
+        if (keys.contains(key)) {
+            keys.remove(key);
+            Toast.makeText(this, "App unpinned",
+                Toast.LENGTH_SHORT).show();
+        } else {
+            keys.add(key);
+            Toast.makeText(this, "App pinned!",
+                Toast.LENGTH_SHORT).show();
+        }
 
-        root.addView(scroll, new LinearLayout.LayoutParams(
-            -1, 0, 1));
+        getSharedPreferences(PREFS, MODE_PRIVATE)
+            .edit()
+            .putStringSet(PINNED, keys)
+            .apply();
 
-        TextView back = button("← BACK TO HOME");
-        back.setOnClickListener(v -> showHome());
+        if (pinnedPage) {
+            loadPinned(search == null ? "" :
+                search.getText().toString());
+        } else {
+            showHome();
+        }
+    }
 
-        search.addTextChangedListener(new TextWatcher() {
-            public void beforeTextChanged(CharSequence s,
-                int start, int count, int after) {}
-            public void onTextChanged(CharSequence s,
-                int start, int before, int count) {
-                loadApps(s.toString());
+    List<ResolveInfo> getPinnedApps() {
+        Set<String> keys = getPinnedKeys();
+        List<ResolveInfo> result =
+            new ArrayList<>();
+
+        for (ResolveInfo app : getLaunchableApps()) {
+            if (keys.contains(appKey(app))) {
+                result.add(app);
             }
-            public void afterTextChanged(Editable e) {}
-        });
+        }
 
-        loadApps("");
+        return result;
     }
 
-    void loadApps(String query) {
-        content.removeAllViews();
+    void loadPinned(String query) {
+        if (content == null) return;
 
-        PackageManager pm = getPackageManager();
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        List<ResolveInfo> apps = pm.queryIntentActivities(intent, 0);
-
-        Collections.sort(apps, (a, b) ->
-            a.loadLabel(pm).toString().compareToIgnoreCase(
-                b.loadLabel(pm).toString()));
+        List<ResolveInfo> apps = getPinnedApps();
+        List<ResolveInfo> filtered =
+            new ArrayList<>();
 
         for (ResolveInfo app : apps) {
-            String name = app.loadLabel(pm).toString();
+            String name = app.loadLabel(
+                getPackageManager()
+            ).toString();
 
-            if (!name.toLowerCase().contains(
-                query.toLowerCase())) continue;
+            if (name.toLowerCase(Locale.ROOT)
+                .contains(query.toLowerCase(Locale.ROOT))) {
+                filtered.add(app);
+            }
+        }
 
-            LinearLayout row = new LinearLayout(this);
-            row.setGravity(Gravity.CENTER_VERTICAL);
-            row.setPadding(12, 8, 12, 8);
-            row.setBackground(panel());
+        if (filtered.isEmpty()) {
+            content.removeAllViews();
 
-            ImageView icon = new ImageView(this);
-            icon.setImageDrawable(app.loadIcon(pm));
-            icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            row.addView(icon, new LinearLayout.LayoutParams(55, 55));
+            TextView empty = text(
+                apps.isEmpty()
+                    ? "No pinned apps yet.\nLong-press an app on Home to pin it."
+                    : "No matching pinned apps found.",
+                14, 0xFFB9C7E8
+            );
 
-            TextView label = text(name, 15, Color.WHITE);
-            label.setGravity(Gravity.CENTER_VERTICAL);
-            row.addView(label, new LinearLayout.LayoutParams(
-                0, 55, 1));
+            content.addView(empty,
+                new LinearLayout.LayoutParams(-1, 150));
 
-            LinearLayout.LayoutParams p =
-                new LinearLayout.LayoutParams(-1, 68);
-            p.setMargins(0, 5, 0, 5);
-            content.addView(row, p);
-
-            row.setOnClickListener(v -> {
-                Intent launch = new Intent();
-                launch.setComponent(new ComponentName(
-                    app.activityInfo.packageName,
-                    app.activityInfo.name));
-                try {
-                    startActivity(launch);
-                } catch (Exception e) {
-                    Toast.makeText(this, "Cannot open app",
-                        Toast.LENGTH_SHORT).show();
-                }
-            });
+        } else {
+            populateGrid(content, filtered);
         }
     }
 
     @Override
     public void onBackPressed() {
-        if (drawer) showHome();
-        else super.onBackPressed();
+        if (pinnedPage) {
+            showHome();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
