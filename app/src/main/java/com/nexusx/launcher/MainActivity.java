@@ -126,18 +126,22 @@ public class MainActivity extends Activity {
         List<ResolveInfo> apps = getLaunchableApps();
         PackageManager pm = getPackageManager();
 
-        for (int i = 0; i < apps.size(); i += 4) {
+        int columns = 5;
+        int rowsPerPage = 6;
+
+        for (int i = 0; i < apps.size(); i += columns) {
             LinearLayout row = new LinearLayout(this);
             row.setGravity(Gravity.CENTER);
             row.setOrientation(LinearLayout.HORIZONTAL);
 
-            for (int j = i; j < Math.min(i + 4, apps.size()); j++) {
-                addAppTile(row, apps.get(j), pm, 105);
+            for (int j = i; j < Math.min(i + columns, apps.size()); j++) {
+                addAppTile(row, apps.get(j), pm, 85);
             }
 
-            for (int j = Math.min(i + 4, apps.size()); j < i + 4; j++) {
+            for (int j = Math.min(i + columns, apps.size());
+                 j < i + columns; j++) {
                 row.addView(new View(this),
-                    new LinearLayout.LayoutParams(0, 105, 1));
+                    new LinearLayout.LayoutParams(0, 85, 1));
             }
 
             appGrid.addView(row);
