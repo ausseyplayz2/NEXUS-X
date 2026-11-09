@@ -479,15 +479,59 @@ public class MainActivity extends Activity {
             "App Information"
         };
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
             .setTitle(name)
-            .setItems(options, (dialog, which) -> {
+            .setItems(options, (d, which) -> {
                 if (which == 0) launchApp(app);
                 else if (which == 1) togglePin(app);
                 else if (which == 2) openAppInfo(app);
             })
             .setNegativeButton("Cancel", null)
-            .show();
+            .create();
+
+        dialog.setOnShowListener(d -> {
+            android.graphics.drawable.GradientDrawable panel =
+                new android.graphics.drawable.GradientDrawable();
+            panel.setColor(0xEE061522);
+            panel.setCornerRadius(0);
+            panel.setStroke(dp(1), 0xFF19BFFF);
+
+            android.view.Window window = dialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(panel);
+                window.setDimAmount(0.65f);
+            }
+
+            TextView title = dialog.findViewById(android.R.id.alertTitle);
+            if (title != null) {
+                title.setTextColor(0xFF45D9FF);
+                title.setShadowLayer(dp(5), 0, 0, 0xAA19BFFF);
+            }
+
+            android.widget.ListView list = dialog.getListView();
+            list.setDivider(new android.graphics.drawable.ColorDrawable(
+                0x8830BFEF
+            ));
+            list.setDividerHeight(dp(1));
+
+            list.post(() -> {
+                for (int i = 0; i < list.getChildCount(); i++) {
+                    android.view.View item = list.getChildAt(i);
+                    if (item instanceof TextView) {
+                        TextView option = (TextView) item;
+                        option.setTextColor(0xFFEAFBFF);
+                        option.setPadding(
+                            dp(20), dp(12), dp(16), dp(12)
+                        );
+                    }
+                }
+            });
+
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                .setTextColor(0xFF45D9FF);
+        });
+
+        dialog.show();
     }
 
     void launchApp(ResolveInfo app) {
