@@ -69,25 +69,24 @@ public class MainActivity extends Activity {
         setContentView(root);
     }
 
+
     void showHome() {
         drawer = false;
         setup();
 
-        TextView logo = text("✦ N E X U S  X ✦", 27, cyan);
-        root.addView(logo, new LinearLayout.LayoutParams(-1, 75));
+        TextView logo = text("✦ N E X U S  X ✦", 25, cyan);
+        root.addView(logo, new LinearLayout.LayoutParams(-1, 55));
 
-        TextView subtitle = text("GAMING COMMAND CENTER", 11, 0xFFB18CFF);
+        TextView subtitle = text("GAMING COMMAND CENTER", 10, 0xFFB18CFF);
         root.addView(subtitle);
 
-        root.addView(new Space(this), new LinearLayout.LayoutParams(1, 65));
-
-        TextView clock = text("", 52, Color.WHITE);
-        root.addView(clock);
+        TextView clock = text("", 45, Color.WHITE);
+        root.addView(clock, new LinearLayout.LayoutParams(-1, 65));
 
         TextView date = text(
-            new java.text.SimpleDateFormat("EEEE, MMMM dd",
-            Locale.getDefault()).format(new Date()),
-            15, 0xFFB9C7E8
+            new java.text.SimpleDateFormat(
+                "EEEE, MMMM dd", Locale.getDefault()
+            ).format(new Date()), 13, 0xFFB9C7E8
         );
         root.addView(date);
 
@@ -95,35 +94,133 @@ public class MainActivity extends Activity {
             public void run() {
                 if (!drawer && clock.getParent() != null) {
                     clock.setText(new java.text.SimpleDateFormat(
-                        "HH:mm", Locale.getDefault()).format(new Date()));
+                        "HH:mm", Locale.getDefault()
+                    ).format(new Date()));
                     new Handler().postDelayed(this, 1000);
                 }
             }
         });
 
-        root.addView(new Space(this),
-            new LinearLayout.LayoutParams(1, 65));
+        TextView status = text(
+            "◈ SYSTEM ONLINE  •  SELECT AN APP",
+            11, cyan
+        );
+        LinearLayout.LayoutParams sp =
+            new LinearLayout.LayoutParams(-1, 45);
+        sp.topMargin = 8;
+        root.addView(status, sp);
 
-        TextView status = text("◈ SYSTEM ONLINE  •  NEXUS CORE",
-            13, cyan);
-        root.addView(status);
+        ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(false);
 
-        root.addView(new Space(this),
-            new LinearLayout.LayoutParams(1, 35));
+        LinearLayout appGrid = new LinearLayout(this);
+        appGrid.setOrientation(LinearLayout.VERTICAL);
+        appGrid.setPadding(0, 8, 0, 8);
 
-        TextView apps = button("✦  OPEN APP LIBRARY");
-        apps.setOnClickListener(v -> showDrawer());
+        scroll.addView(appGrid);
 
-        TextView settings = button("⚙  LAUNCHER SETTINGS");
-        settings.setOnClickListener(v ->
-            Toast.makeText(this, "More customization coming soon!",
-            Toast.LENGTH_SHORT).show());
+        root.addView(scroll, new LinearLayout.LayoutParams(
+            -1, 0, 1
+        ));
 
-        root.addView(new Space(this),
-            new LinearLayout.LayoutParams(1, 0, 1));
+        List<ResolveInfo> apps = getLaunchableApps();
+        PackageManager pm = getPackageManager();
 
-        root.addView(text("NEXUS X  •  VERSION 1.0", 11,
-            0xFF7886B0));
+        for (int i = 0; i < apps.size(); i += 4) {
+            LinearLayout row = new LinearLayout(this);
+            row.setGravity(Gravity.CENTER);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+
+            for (int j = i; j < Math.min(i + 4, apps.size()); j++) {
+                addAppTile(row, apps.get(j), pm, 105);
+            }
+
+            for (int j = Math.min(i + 4, apps.size()); j < i + 4; j++) {
+                row.addView(new View(this),
+                    new LinearLayout.LayoutParams(0, 105, 1));
+            }
+
+            appGrid.addView(row);
+        }
+
+        // Bottom dock: first four installed apps
+        LinearLayout dock = new LinearLayout(this);
+        dock.setGravity(Gravity.CENTER);
+        dock.setBackground(panel());
+        dock.setPadding(4, 5, 4, 5);
+
+        for (int i = 0; i < Math.min(4, apps.size()); i++) {
+            addAppTile(dock, apps.get(i), pm, 75);
+        }
+
+        LinearLayout.LayoutParams dp =
+            new LinearLayout.LayoutParams(-1, 85);
+        dp.topMargin = 8;
+        root.addView(dock, dp);
+    }
+
+    List<ResolveInfo> getLaunchableApps() {
+        PackageManager pm = getPackageManager();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        List<ResolveInfo> apps = pm.queryIntentActivities(intent, 0);
+
+        Collections.sort(apps, (a, b) ->
+            a.loadLabel(pm).toString().compareToIgnoreCase(
+                b.loadLabel(pm).toString()
+            )
+        );
+
+        return apps;
+    }
+
+    void addAppTile(LinearLayout parent, ResolveInfo app,
+                    PackageManager pm, int height) {
+        LinearLayout tile = new LinearLayout(this);
+        tile.setOrientation(LinearLayout.VERTICAL);
+        tile.setGravity(Gravity.CENTER);
+        tile.setPadding(2, 4, 2, 4);
+        tile.setClickable(true);
+        tile.setFocusable(true);
+
+        ImageView icon = new ImageView(this);
+        icon.setImageDrawable(app.loadIcon(pm));
+        icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+        tile.addView(icon, new LinearLayout.LayoutParams(42, 42));
+
+        TextView label = text(
+            app.loadLabel(pm).toString(), 10, Color.WHITE
+        );
+        label.setMaxLines(1);
+        label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+
+        tile.addView(label, new LinearLayout.LayoutParams(
+            -1, 25
+        ));
+
+        parent.addView(tile, new LinearLayout.LayoutParams(
+            0, height, 1
+        ));
+
+        tile.setOnClickListener(v -> launchApp(app));
+    }
+
+    void launchApp(ResolveInfo app) {
+        try {
+            Intent launch = new Intent(Intent.ACTION_MAIN);
+            launch.addCategory(Intent.CATEGORY_LAUNCHER);
+            launch.setComponent(new ComponentName(
+                app.activityInfo.packageName,
+                app.activityInfo.name
+            ));
+            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(launch);
+        } catch (Exception e) {
+            Toast.makeText(this, "Cannot open app",
+                Toast.LENGTH_SHORT).show();
+        }
     }
 
     TextView button(String label) {
