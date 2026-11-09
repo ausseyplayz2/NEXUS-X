@@ -112,11 +112,9 @@ public class MainActivity extends Activity {
             new LinearLayout.LayoutParams(1, 35));
 
         Button apps = button("✦  OPEN APP LIBRARY");
-        root.addView(apps);
         apps.setOnClickListener(v -> showDrawer());
 
         Button settings = button("⚙  LAUNCHER SETTINGS");
-        root.addView(settings);
         settings.setOnClickListener(v ->
             Toast.makeText(this, "More customization coming soon!",
             Toast.LENGTH_SHORT).show());
