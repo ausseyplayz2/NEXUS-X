@@ -805,14 +805,14 @@ public class MainActivity extends Activity {
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(dp(1));
             p.setColor(0x5545BFFF);
-            canvas.drawCircle(cx, cy, s * 0.66f, p);
+            canvas.drawCircle(cx, cy, size * 0.66f, p);
             p.setColor(0x664D64C8);
-            canvas.drawCircle(cx, cy, s * 0.73f, p);
+            canvas.drawCircle(cx, cy, size * 0.73f, p);
 
             p.setColor(0x5539CFFF);
             RectF arc = new RectF(
-                cx - s * 0.78f, cy - s * 0.78f,
-                cx + s * 0.78f, cy + s * 0.78f
+                cx - size * 0.78f, cy - size * 0.78f,
+                cx + size * 0.78f, cy + size * 0.78f
             );
             canvas.drawArc(arc, 205, 48, false, p);
             canvas.drawArc(arc, 25, 52, false, p);
@@ -821,7 +821,7 @@ public class MainActivity extends Activity {
             // Small HUD tick marks.
             for (int i = 0; i < 32; i++) {
                 double a = Math.PI * 2 * i / 32;
-                float r1 = s * 0.70f;
+                float r1 = size * 0.70f;
                 float r2 = r1 + (i % 4 == 0 ? dp(9) : dp(4));
 
                 float x1 = cx + (float)Math.cos(a) * r1;
