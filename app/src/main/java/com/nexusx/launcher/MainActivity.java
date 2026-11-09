@@ -111,10 +111,10 @@ public class MainActivity extends Activity {
         root.addView(new Space(this),
             new LinearLayout.LayoutParams(1, 35));
 
-        Button apps = button("✦  OPEN APP LIBRARY");
+        TextView apps = button("✦  OPEN APP LIBRARY");
         apps.setOnClickListener(v -> showDrawer());
 
-        Button settings = button("⚙  LAUNCHER SETTINGS");
+        TextView settings = button("⚙  LAUNCHER SETTINGS");
         settings.setOnClickListener(v ->
             Toast.makeText(this, "More customization coming soon!",
             Toast.LENGTH_SHORT).show());
@@ -126,15 +126,22 @@ public class MainActivity extends Activity {
             0xFF7886B0));
     }
 
-    Button button(String label) {
-        Button b = new Button(this);
+    TextView button(String label) {
+        TextView b = new TextView(this);
         b.setText(label);
-        b.setTextColor(cyan);
-        b.setTextSize(14);
+        b.setTextColor(Color.WHITE);
+        b.setTextSize(15);
+        b.setTypeface(Typeface.DEFAULT_BOLD);
+        b.setGravity(Gravity.CENTER);
+        b.setSingleLine(true);
+        b.setClickable(true);
+        b.setFocusable(true);
         b.setBackground(panel());
+
         LinearLayout.LayoutParams p =
             new LinearLayout.LayoutParams(-1, 65);
         p.setMargins(0, 10, 0, 10);
+
         root.addView(b, p);
         return b;
     }
@@ -163,7 +170,7 @@ public class MainActivity extends Activity {
         root.addView(scroll, new LinearLayout.LayoutParams(
             -1, 0, 1));
 
-        Button back = button("← BACK TO HOME");
+        TextView back = button("← BACK TO HOME");
         back.setOnClickListener(v -> showHome());
 
         search.addTextChangedListener(new TextWatcher() {
