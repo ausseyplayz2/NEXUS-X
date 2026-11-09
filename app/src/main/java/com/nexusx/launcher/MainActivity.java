@@ -631,10 +631,27 @@ public class MainActivity extends Activity {
     class CyberBackground extends View {
         Paint p = new Paint(3);
         Random stars = new Random(24);
+        long animationStart;
+        boolean animationRunning;
 
         CyberBackground(Context c) {
             super(c);
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            animationStart = android.os.SystemClock.uptimeMillis();
+        }
+
+        @Override
+        protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            animationStart = android.os.SystemClock.uptimeMillis();
+            animationRunning = true;
+            postInvalidate();
+        }
+
+        @Override
+        protected void onDetachedFromWindow() {
+            animationRunning = false;
+            super.onDetachedFromWindow();
         }
 
         void line(Canvas c, float x1, float y1, float x2, float y2,
@@ -650,6 +667,9 @@ public class MainActivity extends Activity {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+
+            long elapsed = android.os.SystemClock.uptimeMillis() - animationStart;
+            float pulse = (float)(0.5 + 0.5 * Math.sin(elapsed / 850.0));
 
             float w = getWidth();
             float h = getHeight();
@@ -782,7 +802,7 @@ public class MainActivity extends Activity {
                 new int[]{0xFF142D55, 0xFF176C91, 0xFF30205C},
                 null, Shader.TileMode.CLAMP
             ));
-            p.setShadowLayer(dp(15), 0, 0, 0xFF28CFFF);
+            p.setShadowLayer(dp(15f + pulse * 5f), 0, 0, 0xFF28CFFF);
             canvas.drawPath(core, p);
             p.clearShadowLayer();
             p.setShader(null);
@@ -794,7 +814,7 @@ public class MainActivity extends Activity {
 
             p.setStyle(Paint.Style.FILL);
             p.setColor(0xFFB9FBFF);
-            canvas.drawCircle(cx, cy, dp(3), p);
+            canvas.drawCircle(cx, cy, dp(3f + pulse * 1.5f), p);
 
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(dp(1));
@@ -814,9 +834,12 @@ public class MainActivity extends Activity {
                 cx - size * 0.78f, cy - size * 0.78f,
                 cx + size * 0.78f, cy + size * 0.78f
             );
+            canvas.save();
+            canvas.rotate((elapsed / 1000f) * 8f, cx, cy);
             canvas.drawArc(arc, 205, 48, false, p);
             canvas.drawArc(arc, 25, 52, false, p);
             canvas.drawArc(arc, 115, 35, false, p);
+            canvas.restore();
 
             // Small HUD tick marks.
             for (int i = 0; i < 32; i++) {
@@ -839,7 +862,9 @@ public class MainActivity extends Activity {
             stars.setSeed(24);
             for (int i = 0; i < 95; i++) {
                 float x = stars.nextFloat() * w;
-                float y = stars.nextFloat() * h;
+                float baseY = stars.nextFloat() * h;
+                float speed = 8f + (i % 5) * 3f;
+                float y = (baseY + elapsed / 1000f * speed) % h;
                 float r = dp(1) + stars.nextFloat() * dp(1.4f);
 
                 p.setColor(i % 5 == 0 ? 0xCC9C75FF : 0xAA65DFFF);
@@ -867,6 +892,10 @@ public class MainActivity extends Activity {
             canvas.drawLine(w - m, h - m, w - m, h - m - len, p);
 
             p.setStyle(Paint.Style.FILL);
+
+            if (animationRunning) {
+                postInvalidateDelayed(33);
+            }
         }
     }
 
