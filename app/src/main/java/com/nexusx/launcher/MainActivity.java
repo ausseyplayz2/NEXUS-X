@@ -85,38 +85,95 @@ public class MainActivity extends Activity {
     }
 
     void showHeader() {
-        TextView logo = text("✦ N E X U S  X ✦", 22, cyan);
-        fitTitle(logo, 15, 22);
-        root.addView(logo, new LinearLayout.LayoutParams(-1, dp(36)));
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
 
-        TextView subtitle = text("GAMING COMMAND CENTER", 10, 0xFFB18CFF);
-        fitTitle(subtitle, 8, 10);
-        root.addView(subtitle, new LinearLayout.LayoutParams(-1, dp(18)));
+        // LEFT: Military and normal time
+        LinearLayout timePanel = new LinearLayout(this);
+        timePanel.setOrientation(LinearLayout.VERTICAL);
+        timePanel.setGravity(Gravity.CENTER_VERTICAL);
+        timePanel.setLayoutParams(
+            new LinearLayout.LayoutParams(0, dp(76), 1)
+        );
 
-        TextView clock = text("", 42, Color.WHITE);
-        activeClock = clock;
-        root.addView(clock, new LinearLayout.LayoutParams(-1, dp(49)));
+        TextView militaryClock = text("", 36, Color.WHITE);
+        militaryClock.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        activeClock = militaryClock;
+        timePanel.addView(militaryClock,
+            new LinearLayout.LayoutParams(-1, dp(43)));
 
+        TextView normalClock = text("", 14, cyan);
+        normalClock.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        timePanel.addView(normalClock,
+            new LinearLayout.LayoutParams(-1, dp(25)));
+
+        // RIGHT: Cyber interface identity
+        LinearLayout logoPanel = new LinearLayout(this);
+        logoPanel.setOrientation(LinearLayout.VERTICAL);
+        logoPanel.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        logoPanel.setPadding(dp(4), 0, dp(3), 0);
+        logoPanel.setLayoutParams(
+            new LinearLayout.LayoutParams(0, dp(76), 1)
+        );
+
+        TextView logo = text("◈ NEXUS-X ◈", 21, cyan);
+        logo.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        fitTitle(logo, 16, 21);
+        logoPanel.addView(logo,
+            new LinearLayout.LayoutParams(-1, dp(37)));
+
+        TextView subtitle = text(
+            "GAMING // COMMAND CENTER", 9, 0xFFB18CFF
+        );
+        subtitle.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        fitTitle(subtitle, 7, 9);
+        logoPanel.addView(subtitle,
+            new LinearLayout.LayoutParams(-1, dp(20)));
+
+        header.addView(timePanel);
+        header.addView(logoPanel);
+        root.addView(header,
+            new LinearLayout.LayoutParams(-1, dp(78)));
+
+        // Full date
         TextView date = text(
             new java.text.SimpleDateFormat(
-                "EEEE, MMMM dd", Locale.getDefault()
+                "EEEE, MMMM dd, yyyy", Locale.getDefault()
             ).format(new Date()),
-            12, 0xFFB9C7E8
+            11, 0xFFB9C7E8
         );
-        fitTitle(date, 9, 12);
-        root.addView(date, new LinearLayout.LayoutParams(-1, dp(21)));
+        date.setGravity(Gravity.CENTER_VERTICAL);
+        fitTitle(date, 9, 11);
+        root.addView(date,
+            new LinearLayout.LayoutParams(-1, dp(23)));
 
+        // Live clock updates
         Handler handler = new Handler(Looper.getMainLooper());
-
         Runnable updateClock = new Runnable() {
             @Override
             public void run() {
-                if (activeClock == clock) {
-                    clock.setText(
+                if (activeClock == militaryClock) {
+                    Date now = new Date();
+
+                    militaryClock.setText(
                         new java.text.SimpleDateFormat(
                             "HH:mm", Locale.getDefault()
-                        ).format(new Date())
+                        ).format(now)
                     );
+
+                    normalClock.setText(
+                        new java.text.SimpleDateFormat(
+                            "h:mm a", Locale.getDefault()
+                        ).format(now)
+                    );
+
+                    date.setText(
+                        new java.text.SimpleDateFormat(
+                            "EEEE, MMMM dd, yyyy", Locale.getDefault()
+                        ).format(now)
+                    );
+
                     handler.postDelayed(this, 1000);
                 }
             }
@@ -124,7 +181,8 @@ public class MainActivity extends Activity {
         updateClock.run();
 
         TextView status = text("◈ SYSTEM ONLINE", 9, cyan);
-        root.addView(status, new LinearLayout.LayoutParams(-1, dp(25)));
+        root.addView(status,
+            new LinearLayout.LayoutParams(-1, dp(23)));
     }
 
     void showHome() {
