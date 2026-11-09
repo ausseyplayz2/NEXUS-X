@@ -502,12 +502,6 @@ public class MainActivity extends Activity {
                 window.setDimAmount(0.65f);
             }
 
-            TextView title = dialog.findViewById(android.R.id.alertTitle);
-            if (title != null) {
-                title.setTextColor(0xFF45D9FF);
-                title.setShadowLayer(dp(5), 0, 0, 0xAA19BFFF);
-            }
-
             android.widget.ListView list = dialog.getListView();
             list.setDivider(new android.graphics.drawable.ColorDrawable(
                 0x8830BFEF
