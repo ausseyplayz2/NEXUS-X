@@ -205,11 +205,9 @@ public class MainActivity extends Activity {
             row.setPadding(12, 8, 12, 8);
             row.setBackground(panel());
 
-            TextView icon = new TextView(this);
-            icon.setText("◈");
-            icon.setTextSize(27);
-            icon.setTextColor(cyan);
-            icon.setGravity(Gravity.CENTER);
+            ImageView icon = new ImageView(this);
+            icon.setImageDrawable(app.loadIcon(pm));
+            icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
             row.addView(icon, new LinearLayout.LayoutParams(55, 55));
 
             TextView label = text(name, 15, Color.WHITE);
