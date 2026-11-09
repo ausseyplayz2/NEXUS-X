@@ -894,7 +894,7 @@ public class MainActivity extends Activity {
             p.setStyle(Paint.Style.FILL);
 
             if (animationRunning) {
-                postInvalidateDelayed(33);
+                postInvalidateDelayed(42);
             }
         }
     }
