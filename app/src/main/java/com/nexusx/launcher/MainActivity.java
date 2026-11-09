@@ -89,66 +89,59 @@ public class MainActivity extends Activity {
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
 
-        // LEFT: Military and normal time
-        LinearLayout timePanel = new LinearLayout(this);
-        timePanel.setOrientation(LinearLayout.VERTICAL);
-        timePanel.setGravity(Gravity.CENTER_VERTICAL);
-        timePanel.setLayoutParams(
-            new LinearLayout.LayoutParams(0, dp(76), 1)
-        );
-
-        TextView militaryClock = text("", 36, Color.WHITE);
-        militaryClock.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-        activeClock = militaryClock;
-        timePanel.addView(militaryClock,
-            new LinearLayout.LayoutParams(-1, dp(43)));
-
-        TextView normalClock = text("", 14, cyan);
-        normalClock.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-        timePanel.addView(normalClock,
-            new LinearLayout.LayoutParams(-1, dp(25)));
-
-        // RIGHT: Cyber interface identity
         LinearLayout logoPanel = new LinearLayout(this);
         logoPanel.setOrientation(LinearLayout.VERTICAL);
-        logoPanel.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-        logoPanel.setPadding(dp(4), 0, dp(3), 0);
+        logoPanel.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         logoPanel.setLayoutParams(
-            new LinearLayout.LayoutParams(0, dp(76), 1)
+            new LinearLayout.LayoutParams(0, dp(72), 1.15f)
         );
 
-        TextView logo = text("◈ NEXUS-X ◈", 21, cyan);
-        logo.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-        fitTitle(logo, 16, 21);
+        TextView logo = text("◈  NEXUS-X", 23, cyan);
+        logo.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        logo.setShadowLayer(dp(12), 0, 0, 0xCC16BFFF);
+        fitTitle(logo, 17, 23);
         logoPanel.addView(logo,
-            new LinearLayout.LayoutParams(-1, dp(37)));
+            new LinearLayout.LayoutParams(-1, dp(48)));
 
-        TextView subtitle = text(
-            "GAMING // COMMAND CENTER", 9, 0xFFB18CFF
+        View accentLine = new View(this);
+        GradientDrawable accent = new GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            new int[]{0xFF26DFFF, 0xAA7655FF, 0x0026DFFF}
         );
-        subtitle.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-        fitTitle(subtitle, 7, 9);
-        logoPanel.addView(subtitle,
-            new LinearLayout.LayoutParams(-1, dp(20)));
+        accentLine.setBackground(accent);
+        logoPanel.addView(accentLine,
+            new LinearLayout.LayoutParams(dp(112), dp(2)));
 
-        header.addView(timePanel);
+        LinearLayout timePanel = new LinearLayout(this);
+        timePanel.setOrientation(LinearLayout.VERTICAL);
+        timePanel.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        timePanel.setLayoutParams(
+            new LinearLayout.LayoutParams(0, dp(72), 0.85f)
+        );
+
+        TextView militaryClock = text("", 34, Color.WHITE);
+        militaryClock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        militaryClock.setShadowLayer(dp(9), 0, 0, 0xAA31CFFF);
+        activeClock = militaryClock;
+        timePanel.addView(militaryClock,
+            new LinearLayout.LayoutParams(-1, dp(42)));
+
+        TextView normalClock = text("", 13, cyan);
+        normalClock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        timePanel.addView(normalClock,
+            new LinearLayout.LayoutParams(-1, dp(23)));
+
         header.addView(logoPanel);
+        header.addView(timePanel);
         root.addView(header,
-            new LinearLayout.LayoutParams(-1, dp(78)));
+            new LinearLayout.LayoutParams(-1, dp(74)));
 
-        // Full date
-        TextView date = text(
-            new java.text.SimpleDateFormat(
-                "EEEE, MMMM dd, yyyy", Locale.getDefault()
-            ).format(new Date()),
-            11, 0xFFB9C7E8
-        );
-        date.setGravity(Gravity.CENTER_VERTICAL);
+        TextView date = text("", 11, 0xFFB9C7E8);
+        date.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         fitTitle(date, 9, 11);
         root.addView(date,
             new LinearLayout.LayoutParams(-1, dp(23)));
 
-        // Live clock updates
         Handler handler = new Handler(Looper.getMainLooper());
         Runnable updateClock = new Runnable() {
             @Override
@@ -181,8 +174,10 @@ public class MainActivity extends Activity {
         updateClock.run();
 
         TextView status = text("◈ SYSTEM ONLINE", 9, cyan);
+        status.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        status.setShadowLayer(dp(5), 0, 0, 0x8831CFFF);
         root.addView(status,
-            new LinearLayout.LayoutParams(-1, dp(23)));
+            new LinearLayout.LayoutParams(-1, dp(21)));
     }
 
     void showHome() {
@@ -191,6 +186,8 @@ public class MainActivity extends Activity {
 
         ScrollView scroll = new ScrollView(this);
         scroll.setVerticalScrollBarEnabled(false);
+        scroll.setVerticalFadingEdgeEnabled(true);
+        scroll.setFadingEdgeLength(dp(46));
         scroll.setFillViewport(false);
 
         LinearLayout homeContent = new LinearLayout(this);
@@ -218,7 +215,13 @@ public class MainActivity extends Activity {
         LinearLayout body = new LinearLayout(this);
         body.setOrientation(LinearLayout.VERTICAL);
         body.setPadding(dp(10), dp(12), dp(9), dp(10));
-        body.setBackground(panel());
+        GradientDrawable glassPanel = new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            new int[]{0x88409AC8, 0x99202F59, 0x99401F68}
+        );
+        glassPanel.setCornerRadius(dp(5));
+        glassPanel.setStroke(dp(1), 0xAA54DFFF);
+        body.setBackground(glassPanel);
 
         FrameLayout.LayoutParams bodyParams =
             new FrameLayout.LayoutParams(
@@ -243,7 +246,13 @@ public class MainActivity extends Activity {
         search.setHint("⌕  Search apps");
         search.setTextSize(13);
         search.setPadding(dp(10), dp(4), dp(10), dp(4));
-        search.setBackground(panel());
+        GradientDrawable searchGlass = new GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            new int[]{0x77305D80, 0x88402C69}
+        );
+        searchGlass.setCornerRadius(dp(4));
+        searchGlass.setStroke(dp(1), 0x8854DFFF);
+        search.setBackground(searchGlass);
 
         body.addView(search,
             new LinearLayout.LayoutParams(-1, dp(45)));
@@ -395,21 +404,51 @@ public class MainActivity extends Activity {
         tile.setClickable(true);
         tile.setFocusable(true);
 
-        int iconSize = height >= 100 ? 49 : 35;
+        int iconSize = height >= 100 ? 46 : 32;
+        int frameSize = height >= 100 ? 60 : 43;
         int labelSize = height >= 100 ? 10 : 9;
+
+        FrameLayout iconFrame = new FrameLayout(this);
+
+        GradientDrawable iconPlate = new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            new int[]{0xDD174A69, 0xDD171E42, 0xDD35205C}
+        );
+        iconPlate.setCornerRadius(dp(5));
+        iconPlate.setStroke(dp(1), 0xCC35DFFF);
+        iconFrame.setBackground(iconPlate);
+        iconFrame.setElevation(dp(6));
 
         ImageView icon = new ImageView(this);
         icon.setImageDrawable(app.loadIcon(pm));
         icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        icon.setPadding(dp(3), dp(3), dp(3), dp(3));
 
-        tile.addView(icon,
-            new LinearLayout.LayoutParams(dp(iconSize), dp(iconSize)));
+        iconFrame.addView(icon,
+            new FrameLayout.LayoutParams(
+                dp(iconSize), dp(iconSize), Gravity.CENTER
+            ));
+
+        View topGlow = new View(this);
+        GradientDrawable glowLine = new GradientDrawable(
+            GradientDrawable.Orientation.LEFT_RIGHT,
+            new int[]{0x0028E8FF, 0xFF42E8FF, 0x0028E8FF}
+        );
+        topGlow.setBackground(glowLine);
+        iconFrame.addView(topGlow,
+            new FrameLayout.LayoutParams(
+                dp(25), dp(2), Gravity.TOP | Gravity.CENTER_HORIZONTAL
+            ));
+
+        tile.addView(iconFrame,
+            new LinearLayout.LayoutParams(dp(frameSize), dp(frameSize)));
 
         TextView label = text(
-            app.loadLabel(pm).toString(), labelSize, Color.WHITE
+            app.loadLabel(pm).toString(), labelSize, 0xFFE8F8FF
         );
         label.setMaxLines(2);
         label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        label.setShadowLayer(dp(4), 0, 0, 0xAA19BFFF);
         label.setAutoSizeTextTypeUniformWithConfiguration(
             8, labelSize, 1,
             android.util.TypedValue.COMPLEX_UNIT_SP
@@ -423,7 +462,6 @@ public class MainActivity extends Activity {
         params.setMargins(dp(1), dp(1), dp(1), dp(1));
 
         parent.addView(tile, params);
-
         tile.setOnClickListener(v -> launchApp(app));
         tile.setOnLongClickListener(v -> {
             showAppMenu(app);
@@ -667,29 +705,101 @@ public class MainActivity extends Activity {
                 line(canvas, x, h * 0.32f, x, h, 0x1E2F9CD0, dp(1));
             }
 
-            // Central X: layered neon rails and energy core.
+            // Layered cyber X emblem.
             float cx = w * 0.50f;
             float cy = h * 0.52f;
-            float s = Math.min(w * 0.65f, h * 0.34f);
+            float size = Math.min(w * 0.72f, h * 0.37f);
 
-            float ax = cx - s / 2;
-            float bx = cx + s / 2;
-            float top = cy - s / 2;
-            float bottom = cy + s / 2;
+            Path beam = new Path();
 
-            line(canvas, ax, top, bx, bottom, 0x332E75FF, dp(28));
-            line(canvas, bx, top, ax, bottom, 0x332E75FF, dp(28));
+            // Blue armored diagonal.
+            beam.moveTo(cx - size * 0.50f, cy - size * 0.34f);
+            beam.lineTo(cx - size * 0.30f, cy - size * 0.49f);
+            beam.lineTo(cx + size * 0.50f, cy + size * 0.34f);
+            beam.lineTo(cx + size * 0.30f, cy + size * 0.49f);
+            beam.close();
 
-            line(canvas, ax, top, bx, bottom, 0x5535CFFF, dp(13));
-            line(canvas, bx, top, ax, bottom, 0x5535CFFF, dp(13));
+            p.setStyle(Paint.Style.FILL);
+            p.setShader(new LinearGradient(
+                cx - size * 0.5f, cy - size * 0.4f,
+                cx + size * 0.5f, cy + size * 0.4f,
+                new int[]{0xFF247DFF, 0xFF31E6FF, 0xFF7652FF},
+                null, Shader.TileMode.CLAMP
+            ));
+            p.setShadowLayer(dp(17), 0, 0, 0xAA168CFF);
+            canvas.drawPath(beam, p);
+            p.clearShadowLayer();
+            p.setShader(null);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(dp(1.5f));
+            p.setColor(0xFF8AF5FF);
+            canvas.drawPath(beam, p);
 
-            line(canvas, ax, top, bx, bottom, 0xCC37DFFF, dp(3));
-            line(canvas, bx, top, ax, bottom, 0xCC37DFFF, dp(3));
+            // Purple opposing diagonal.
+            beam.reset();
+            beam.moveTo(cx + size * 0.30f, cy - size * 0.49f);
+            beam.lineTo(cx + size * 0.50f, cy - size * 0.34f);
+            beam.lineTo(cx - size * 0.30f, cy + size * 0.49f);
+            beam.lineTo(cx - size * 0.50f, cy + size * 0.34f);
+            beam.close();
 
-            line(canvas, ax + dp(5), top, bx + dp(5), bottom,
-                0x664B69FF, dp(1));
-            line(canvas, bx - dp(5), top, ax - dp(5), bottom,
-                0x664B69FF, dp(1));
+            p.setStyle(Paint.Style.FILL);
+            p.setShader(new LinearGradient(
+                cx + size * 0.5f, cy - size * 0.4f,
+                cx - size * 0.5f, cy + size * 0.4f,
+                new int[]{0xFF8A4DFF, 0xFF27CFFF, 0xFF267BFF},
+                null, Shader.TileMode.CLAMP
+            ));
+            p.setShadowLayer(dp(17), 0, 0, 0xAA873DFF);
+            canvas.drawPath(beam, p);
+            p.clearShadowLayer();
+            p.setShader(null);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(dp(1.5f));
+            p.setColor(0xFFB8A0FF);
+            canvas.drawPath(beam, p);
+
+            // Illuminated inner rails.
+            line(canvas, cx - size * 0.38f, cy - size * 0.31f,
+                 cx + size * 0.38f, cy + size * 0.31f,
+                 0xCCB8F8FF, dp(1.4f));
+            line(canvas, cx + size * 0.38f, cy - size * 0.31f,
+                 cx - size * 0.38f, cy + size * 0.31f,
+                 0xCCDBC8FF, dp(1.4f));
+
+            // Central energy core.
+            Path core = new Path();
+            core.moveTo(cx, cy - size * 0.17f);
+            core.lineTo(cx + size * 0.17f, cy);
+            core.lineTo(cx, cy + size * 0.17f);
+            core.lineTo(cx - size * 0.17f, cy);
+            core.close();
+
+            p.setStyle(Paint.Style.FILL);
+            p.setShader(new LinearGradient(
+                cx - size * 0.15f, cy - size * 0.15f,
+                cx + size * 0.15f, cy + size * 0.15f,
+                new int[]{0xFF142D55, 0xFF176C91, 0xFF30205C},
+                null, Shader.TileMode.CLAMP
+            ));
+            p.setShadowLayer(dp(15), 0, 0, 0xFF28CFFF);
+            canvas.drawPath(core, p);
+            p.clearShadowLayer();
+            p.setShader(null);
+
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(dp(2));
+            p.setColor(0xFF9AF7FF);
+            canvas.drawPath(core, p);
+
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(0xFFB9FBFF);
+            canvas.drawCircle(cx, cy, dp(3), p);
+
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(dp(1));
+            p.setColor(0xAA8BDBFF);
+            canvas.drawCircle(cx, cy, size * 0.23f, p);
 
             // HUD circles around the X.
             p.setStyle(Paint.Style.STROKE);
@@ -785,7 +895,7 @@ public class MainActivity extends Activity {
             shape.close();
 
             p.setStyle(Paint.Style.FILL);
-            p.setColor(0xAA0C6C9B);
+            p.setColor(0x5530A9D5);
             canvas.drawPath(shape, p);
 
             p.setStyle(Paint.Style.STROKE);
